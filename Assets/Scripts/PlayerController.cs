@@ -4,14 +4,34 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public Animator animator;
     private void Awake()
     {
-        Debug.Log("hi this is player");
+        Debug.Log("Player script is activated");
     }
-    
 
-    private void OnCollisionEnter(Collision collision)
+    private void Update()
     {
-        Debug.Log("Collision: "+ gameObject.name);
+        float speed = Input.GetAxisRaw("Horizontal");
+        animator.SetFloat("Speed", Mathf.Abs(speed));
+        Vector3 scale = transform.localScale;
+        if (speed < 0f)
+        {
+            scale.x = -1f * Mathf.Abs(scale.x);
+        }
+        else if (speed > 0f)
+        {
+            scale.x = Mathf.Abs(scale.x);
+        }
+        transform.localScale = scale;
+
+
+
+
+
     }
+
+
+
+
 }
