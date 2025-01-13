@@ -86,9 +86,9 @@ public class PlayerController : MonoBehaviour
         {
             playerAnimator.SetTrigger("Jump");
             rd2d.AddForce(new Vector2(0f, Jump), ForceMode2D.Force);
-            //Debug.Log("Jumping");
+            Debug.Log("Jumping");
         }
-        //Debug.Log("isGrounded: " + isGrounded);
+        Debug.Log("isGrounded: " + isGrounded);
     }
 
     private void OnCollisionStay2D(Collision2D other)
@@ -132,4 +132,5 @@ public class PlayerController : MonoBehaviour
         // Play Crouch animation
         playerAnimator.SetBool("Crouch", crouch);
     }
+   
 }
