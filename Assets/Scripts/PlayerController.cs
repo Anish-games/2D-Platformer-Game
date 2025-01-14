@@ -1,11 +1,14 @@
 using JetBrains.Annotations;
 using Newtonsoft.Json.Bson;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
-{
+{   
+    public ScoreController scoreController;
     public float speed;
     public float Jump;
     private Animator animator;
@@ -20,7 +23,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        Debug.Log("Player script is activated");
+        UnityEngine.Debug.Log("Player script is activated");
         animator = GetComponent<Animator>();
         playerAnimator = GetComponent<Animator>();
         rd2d = GetComponent<Rigidbody2D>();
@@ -86,9 +89,9 @@ public class PlayerController : MonoBehaviour
         {
             playerAnimator.SetTrigger("Jump");
             rd2d.AddForce(new Vector2(0f, Jump), ForceMode2D.Force);
-            Debug.Log("Jumping");
+            //Debug.Log("Jumping");
         }
-        Debug.Log("isGrounded: " + isGrounded);
+        //Debug.Log("isGrounded: " + isGrounded);
     }
 
     private void OnCollisionStay2D(Collision2D other)
@@ -132,5 +135,11 @@ public class PlayerController : MonoBehaviour
         // Play Crouch animation
         playerAnimator.SetBool("Crouch", crouch);
     }
-   
+
+     public void PickUpKey()
+    {
+        scoreController.scoreIncrement(10);
+        UnityEngine.Debug.Log("key picked.");
+
+    }
 }
