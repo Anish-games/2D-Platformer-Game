@@ -27,14 +27,17 @@ public class EnemyController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.GetComponent<PlayerController>() != null)
-        {
-            PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
-            Transform PlayerPosition = collision.gameObject.transform;
-            transform.localScale = new Vector2(-Mathf.Sign(PlayerPosition.localScale.x), PlayerPosition.localScale.y);
-            animator.SetBool("Attack", true);
-            enemyBody.velocity = new Vector2(0, 0);
-            playerController.DamagePlayer();
+        //if (collision.gameObject.layer != LayerMask.NameToLayer("Enemy"))
+        { 
+            if (collision.gameObject.GetComponent<PlayerController>() != null)
+            {
+             PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
+             Transform PlayerPosition = collision.gameObject.transform;
+             transform.localScale = new Vector2(-Mathf.Sign(PlayerPosition.localScale.x), PlayerPosition.localScale.y);
+             animator.SetBool("Attack", true);
+             enemyBody.velocity = new Vector2(0, 0);
+             playerController.DamagePlayer();
+             }
         }
 
     }
