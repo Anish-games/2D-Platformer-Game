@@ -27,4 +27,9 @@ public class LevelOverController : MonoBehaviour
             SceneManager.LoadScene(NextLevel);
         }
     }
+
+    public void restartScene()
+    {
+        SceneManager.LoadScene(CurrentLevel);
+    }
 }

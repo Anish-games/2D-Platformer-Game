@@ -4,15 +4,17 @@
 TagManager:
   serializedVersion: 2
   tags:
+  - Portal
+  - Ground
   - platform
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Platform
+  - 
   - Water
   - UI
-  - Player
+  - 
   - 
   - 
   - 
