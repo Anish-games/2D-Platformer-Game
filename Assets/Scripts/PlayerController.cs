@@ -21,6 +21,7 @@ public class PlayerController : MonoBehaviour
     private int Lives = 3;
     private bool DoubleJump;
 
+   
     void Awake()
     {
         animator = GetComponent<Animator>();
