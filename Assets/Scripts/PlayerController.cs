@@ -134,9 +134,11 @@ public class PlayerController : MonoBehaviour
     //GroundCheck
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == ("Ground") ||  collision.gameObject.tag == ("platform"))
+        if (collision.gameObject.tag == ("Ground") ||  collision.gameObject.tag == ("platform") || collision.gameObject.tag == ("MovingPlatform" ))
         {
             IsGrounded = true;
+            animator.SetBool("JumpUp", false);
+            animator.SetBool("JumpDown", false);
         }
 
         if (collision.gameObject.tag == "Portal")
@@ -151,7 +153,7 @@ public class PlayerController : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == ("Ground"))
+        if (collision.gameObject.tag == ("Ground") || collision.gameObject.tag == ("platform") || collision.gameObject.tag == ("MovingPlatform"))
         {
             IsGrounded = false;
         }
@@ -163,6 +165,11 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetBool("Hurt", false);
         }
+
+        if (collision.gameObject.tag == ("MovingPlatform"))
+        {
+            transform.parent = null;
+        }
     }
 
 
@@ -170,8 +177,6 @@ public class PlayerController : MonoBehaviour
     public void Pickup_Key()
     {
         ScoreDisplay.ScoreValue += 10;
-        
-
         Debug.Log("Picked up a Key!");
     }
 
@@ -190,9 +195,18 @@ public class PlayerController : MonoBehaviour
             animator.SetTrigger("Hurt");
             Heart[Lives].SetActive(false);
         }
-
-
-
     }
 
+    public void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == ("MovingPlatform"))
+        { 
+            transform.parent = collision.transform;
+        }
+    }
+    
+
+
+
 }
+
