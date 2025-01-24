@@ -25,6 +25,20 @@ public class LevelLoader : MonoBehaviour
         {
             soundManager.PlayButtonClickAudio();
         }
+        LevelStatus levelStatus = LevelManager.Instance.GetLevelStatus(LevelName);
+        switch (levelStatus)
+        { 
+            case LevelStatus.Locked:
+                Debug.Log("Level Locked , Can't play.");
+                break;
+            case LevelStatus.Unlocked:
+                SceneManager.LoadScene(LevelName);
+                break;
+            case LevelStatus.Completed:
+                SceneManager.LoadScene(LevelName);
+                Debug.Log("Level Complete.");
+                break;
+        }
         SceneManager.LoadScene(LevelName);
     }
 }

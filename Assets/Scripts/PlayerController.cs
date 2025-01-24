@@ -13,6 +13,9 @@ public class PlayerController : MonoBehaviour
     public GameOverController gameOverController;
     public LevelEnd LevelWinController;
 
+
+    
+
     private Animator animator;
     private Rigidbody2D Body;
     private float horizontal;
@@ -27,6 +30,7 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         Body = GetComponent<Rigidbody2D>();
         StartLevel();
+        
     }
 
 
@@ -106,10 +110,12 @@ public class PlayerController : MonoBehaviour
         //Horizontal Movement
         Vector3 position = transform.position;
         position.x += horizontal * speed * Time.deltaTime;
+        
         transform.position = position;
 
         //Run Animation and Flip
         animator.SetFloat("Speed", Mathf.Abs(horizontal));
+        
         Vector3 scale = transform.localScale;
 
         if (horizontal < 0)
@@ -164,6 +170,8 @@ public class PlayerController : MonoBehaviour
     public void Pickup_Key()
     {
         ScoreDisplay.ScoreValue += 10;
+        
+
         Debug.Log("Picked up a Key!");
     }
 
@@ -173,6 +181,7 @@ public class PlayerController : MonoBehaviour
         if (Lives <= 0)
         {
             animator.SetTrigger("Dead");
+            
             gameOverController.PlayerDied();
             enabled = false;
         }
