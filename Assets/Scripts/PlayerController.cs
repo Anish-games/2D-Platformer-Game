@@ -177,8 +177,9 @@ public class PlayerController : MonoBehaviour
     public void Pickup_Key()
     {
         ScoreDisplay.ScoreValue += 10;
-        Debug.Log("Picked up a Key!");
+        Debug.Log("Picked up a Key! Current Score: " + ScoreDisplay.ScoreValue);
     }
+
 
     public void DamagePlayer()
     {
