@@ -13,6 +13,9 @@ public class PlayerController : MonoBehaviour
     public GameOverController gameOverController;
     public LevelEnd LevelWinController;
 
+
+    
+
     private Animator animator;
     private Rigidbody2D Body;
     private float horizontal;
@@ -21,11 +24,13 @@ public class PlayerController : MonoBehaviour
     private int Lives = 3;
     private bool DoubleJump;
 
+   
     void Awake()
     {
         animator = GetComponent<Animator>();
         Body = GetComponent<Rigidbody2D>();
         StartLevel();
+        
     }
 
 
@@ -105,10 +110,12 @@ public class PlayerController : MonoBehaviour
         //Horizontal Movement
         Vector3 position = transform.position;
         position.x += horizontal * speed * Time.deltaTime;
+        
         transform.position = position;
 
         //Run Animation and Flip
         animator.SetFloat("Speed", Mathf.Abs(horizontal));
+        
         Vector3 scale = transform.localScale;
 
         if (horizontal < 0)
@@ -127,9 +134,11 @@ public class PlayerController : MonoBehaviour
     //GroundCheck
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == ("Ground") ||  collision.gameObject.tag == ("platform"))
+        if (collision.gameObject.tag == ("Ground") ||  collision.gameObject.tag == ("platform") || collision.gameObject.tag == ("MovingPlatform" ))
         {
             IsGrounded = true;
+            animator.SetBool("JumpUp", false);
+            animator.SetBool("JumpDown", false);
         }
 
         if (collision.gameObject.tag == "Portal")
@@ -144,7 +153,7 @@ public class PlayerController : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == ("Ground"))
+        if (collision.gameObject.tag == ("Ground") || collision.gameObject.tag == ("platform") || collision.gameObject.tag == ("MovingPlatform"))
         {
             IsGrounded = false;
         }
@@ -156,6 +165,11 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetBool("Hurt", false);
         }
+
+        if (collision.gameObject.tag == ("MovingPlatform"))
+        {
+            transform.parent = null;
+        }
     }
 
 
@@ -163,8 +177,9 @@ public class PlayerController : MonoBehaviour
     public void Pickup_Key()
     {
         ScoreDisplay.ScoreValue += 10;
-        Debug.Log("Picked up a Key!");
+        Debug.Log("Picked up a Key! Current Score: " + ScoreDisplay.ScoreValue);
     }
+
 
     public void DamagePlayer()
     {
@@ -172,6 +187,7 @@ public class PlayerController : MonoBehaviour
         if (Lives <= 0)
         {
             animator.SetTrigger("Dead");
+            
             gameOverController.PlayerDied();
             enabled = false;
         }
@@ -180,9 +196,18 @@ public class PlayerController : MonoBehaviour
             animator.SetTrigger("Hurt");
             Heart[Lives].SetActive(false);
         }
-
-
-
     }
 
+    public void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == ("MovingPlatform"))
+        { 
+            transform.parent = collision.transform;
+        }
+    }
+    
+
+
+
 }
+

@@ -4,16 +4,30 @@ using UnityEngine;
 
 public class KeyController : MonoBehaviour
 {
-    
-    private void OnCollisionEnter2D(Collision2D collision)
+    private Animator animator;
+    private bool Iscollected;
+
+    private void Awake()
     {
-        Debug.Log("Collision detected with: " + collision.gameObject.name);
-        if (collision.gameObject.GetComponent<PlayerController>() != null)
+        animator = gameObject.GetComponent<Animator>();
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (!Iscollected && collision.gameObject.GetComponent<PlayerController>() != null)
         {
+            Iscollected = true;
             PlayerController playerController = collision.gameObject.GetComponent<PlayerController>();
             playerController.Pickup_Key();
-            
-            Destroy(gameObject);
+            animator.SetBool("Collected", true);
+            StartCoroutine(End());
+
         }
+    }
+
+    IEnumerator End()
+    {
+        yield return new WaitForSeconds(0.4f);
+        Destroy(gameObject);
+        Iscollected = false;
     }
 }
