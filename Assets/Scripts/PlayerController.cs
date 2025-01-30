@@ -1,145 +1,213 @@
-using JetBrains.Annotations;
-using Newtonsoft.Json.Bson;
 using System;
+using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
-{   
-    public ScoreController scoreController;
+{
+    public GameObject LevelStart;
     public float speed;
-    public float Jump;
+    public float jump;
+    public GameObject[] Heart;
+    public GameOverController gameOverController;
+    public LevelEnd LevelWinController;
+
+
+    
+
     private Animator animator;
-    private Rigidbody2D rd2d;
-    private bool isGrounded = false;
-    private Animator playerAnimator;
-    [SerializeField] private BoxCollider2D boxCol;
+    private Rigidbody2D Body;
+    private float horizontal;
+    private bool vertical;
+    private bool IsGrounded;
+    private int Lives = 3;
+    private bool DoubleJump;
 
-    // Collider Variables
-    private Vector2 boxColInitSize;
-    private Vector2 boxColInitOffset;
-
-    private void Awake()
+   
+    void Awake()
     {
-        UnityEngine.Debug.Log("Player script is activated");
         animator = GetComponent<Animator>();
-        playerAnimator = GetComponent<Animator>();
-        rd2d = GetComponent<Rigidbody2D>();
+        Body = GetComponent<Rigidbody2D>();
+        StartLevel();
+        
     }
 
-    private void Start()
-    {
-        // Fetching initial collider properties
-        boxColInitSize = new Vector2(0.4295021f, 2.054952f);
-        boxColInitOffset = new Vector2(-0.01529616f, 0.9386219f);
-        boxCol.size = boxColInitSize;
-        boxCol.offset = boxColInitOffset;
-    }
 
-    private void Update()
+    // Update is called once per frame
+    void Update()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Jump");
-        PlayMovementAnimation(horizontal, vertical);
-        MoveCharacter(horizontal, vertical);
+        if (Lives > 0)
+        {
+            horizontal = Input.GetAxisRaw("Horizontal");
+            vertical = Input.GetButtonDown("Vertical");
+            VerticalMovement(vertical);
+            HorizontalMovement(horizontal);
 
-        // Check for crouch input
-        if (Input.GetKey(KeyCode.LeftControl))
-        {
-            Crouch(true);
-        }
-        else
-        {
-            Crouch(false);
+            if (transform.position.y < -10f)
+            {
+                DamagePlayer();
+                StartLevel();
+            }
         }
     }
 
-    private void PlayMovementAnimation(float horizontal, float vertical)
+    private void StartLevel()
     {
+        Vector2 StartLocation = LevelStart.transform.position;
+        transform.position = StartLocation;
+    }
+
+    private void VerticalMovement(bool vertical)
+    {
+        //Jump Animation and Movement
+
+        if (IsGrounded)
+        {
+            DoubleJump = true;
+        }
+        if (vertical)
+        {
+            if (IsGrounded)
+            {
+                animator.SetBool("JumpUp", true);
+                Body.AddForce(new Vector2(0, jump), ForceMode2D.Impulse);
+            }
+            else if (!IsGrounded && DoubleJump)
+            {
+                animator.SetBool("JumpUp", true);
+                Body.AddForce(new Vector2(0, jump), ForceMode2D.Impulse);
+                DoubleJump = false;
+            }
+        }
+        else if (!IsGrounded && !vertical)
+        {
+            animator.SetBool("JumpUp", false);
+            animator.SetBool("JumpDown", true);
+        }
+        else if (IsGrounded && !vertical)
+        {
+            animator.SetBool("JumpDown", false);
+        }
+
+
+
+        //crouch Animation
+        if (Input.GetKeyDown("left ctrl"))
+        {
+            animator.SetBool("Crouch", true);
+        }
+        else if (Input.GetKeyUp("left ctrl"))
+        {
+            animator.SetBool("Crouch", false);
+        }
+
+    }
+
+    private void HorizontalMovement(float horizontal)
+    {
+
+        //Horizontal Movement
+        Vector3 position = transform.position;
+        position.x += horizontal * speed * Time.deltaTime;
+        
+        transform.position = position;
+
+        //Run Animation and Flip
         animator.SetFloat("Speed", Mathf.Abs(horizontal));
+        
         Vector3 scale = transform.localScale;
-        if (horizontal < 0f)
+
+        if (horizontal < 0)
         {
             scale.x = -1f * Mathf.Abs(scale.x);
+
         }
-        else if (horizontal > 0f)
+        else if (horizontal > 0)
         {
-            scale.x = Mathf.Abs(scale.x); // player run animation
+            scale.x = Mathf.Abs(scale.x);
         }
         transform.localScale = scale;
 
-        if (vertical > 0)
+    }
+
+    //GroundCheck
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == ("Ground") ||  collision.gameObject.tag == ("platform") || collision.gameObject.tag == ("MovingPlatform" ))
         {
-            animator.SetBool("Jump", true);
+            IsGrounded = true;
+            animator.SetBool("JumpUp", false);
+            animator.SetBool("JumpDown", false);
         }
-        else // player jump animation
+
+        if (collision.gameObject.tag == "Portal")
         {
-            animator.SetBool("Jump", false);
+            if (ScoreDisplay.ScoreValue >= LevelWinController.WinPoints)
+            {
+                LevelWinController.PlayerWin();
+                enabled = false;
+            }
         }
     }
 
-    private void MoveCharacter(float horizontal, float vertical)
+    void OnTriggerExit2D(Collider2D collision)
     {
-        Vector3 Position = transform.position;
-        Position.x += horizontal * speed * Time.deltaTime;
-        transform.position = Position; // moving player horizontally
-        if (vertical > 0 && isGrounded)
+        if (collision.gameObject.tag == ("Ground") || collision.gameObject.tag == ("platform") || collision.gameObject.tag == ("MovingPlatform"))
         {
-            playerAnimator.SetTrigger("Jump");
-            rd2d.AddForce(new Vector2(0f, Jump), ForceMode2D.Force);
-            //Debug.Log("Jumping");
-        }
-        //Debug.Log("isGrounded: " + isGrounded);
-    }
-
-    private void OnCollisionStay2D(Collision2D other)
-    {
-        if (other.transform.tag == "platform")
-        {
-            isGrounded = true;
-            //Debug.Log("Touching platform: " + other.transform.name);
+            IsGrounded = false;
         }
     }
 
-    private void OnCollisionExit2D(Collision2D other)
+    private void OnCollisionExit2D(Collision2D collision)
     {
-        if (other.transform.tag == "platform")
+        if (collision.gameObject.GetComponent<EnemyController>() != null)
         {
-            isGrounded = false;
-            //Debug.Log("Left platform: " + other.transform.name);
+            animator.SetBool("Hurt", false);
+        }
+
+        if (collision.gameObject.tag == ("MovingPlatform"))
+        {
+            transform.parent = null;
         }
     }
 
-    private void Crouch(bool crouch)
+
+    //Key Collection
+    public void Pickup_Key()
     {
-        if (crouch)
+        ScoreDisplay.ScoreValue += 10;
+        Debug.Log("Picked up a Key! Current Score: " + ScoreDisplay.ScoreValue);
+    }
+
+
+    public void DamagePlayer()
+    {
+        Lives--;
+        if (Lives <= 0)
         {
-            float offX = -0.0978f;     // Offset X
-            float offY = 0.5947f;      // Offset Y
-
-            float sizeX = 0.6988f;     // Size X
-            float sizeY = 1.3398f;     // Size Y
-
-            boxCol.size = new Vector2(sizeX, sizeY);   // Setting the size of collider
-            boxCol.offset = new Vector2(offX, offY);   // Setting the offset of collider
+            animator.SetTrigger("Dead");
+            
+            gameOverController.PlayerDied();
+            enabled = false;
         }
         else
         {
-            // Reset collider to initial values
-            boxCol.size = boxColInitSize;
-            boxCol.offset = boxColInitOffset;
+            animator.SetTrigger("Hurt");
+            Heart[Lives].SetActive(false);
         }
-
-        // Play Crouch animation
-        playerAnimator.SetBool("Crouch", crouch);
     }
 
-     public void PickUpKey()
+    public void OnCollisionEnter2D(Collision2D collision)
     {
-        scoreController.scoreIncrement(10);
-        UnityEngine.Debug.Log("key picked.");
-
+        if (collision.gameObject.tag == ("MovingPlatform"))
+        { 
+            transform.parent = collision.transform;
+        }
     }
+    
+
+
+
 }
+

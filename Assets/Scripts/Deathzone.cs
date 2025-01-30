@@ -11,7 +11,7 @@ public class Deathzone : MonoBehaviour
         Debug.Log("death zone is activated.");
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void OnTriggerEnter2D(Collider2D collision)
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(currentSceneIndex);
