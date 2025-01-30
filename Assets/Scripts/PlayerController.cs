@@ -1,107 +1,213 @@
-using JetBrains.Annotations;
-using Newtonsoft.Json.Bson;
+using System;
+using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public GameObject LevelStart;
     public float speed;
+    public float jump;
+    public GameObject[] Heart;
+    public GameOverController gameOverController;
+    public LevelEnd LevelWinController;
+
+
+    
+
     private Animator animator;
-    private Rigidbody2D rd2d;
-    public float Jump;
-    private bool isGrounded = false;
-    private Animator playerAnimator;
-    private void Awake()
+    private Rigidbody2D Body;
+    private float horizontal;
+    private bool vertical;
+    private bool IsGrounded;
+    private int Lives = 3;
+    private bool DoubleJump;
+
+   
+    void Awake()
     {
-        Debug.Log("Player script is activated");
         animator = GetComponent<Animator>();
-        playerAnimator = GetComponent<Animator>();
-        rd2d = GetComponent<Rigidbody2D>();
+        Body = GetComponent<Rigidbody2D>();
+        StartLevel();
+        
     }
 
-    private void Update()
+
+    // Update is called once per frame
+    void Update()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Jump");
-        PlayMovementAnimation(horizontal , vertical);
-        MoveCharacter(horizontal, vertical);
+        if (Lives > 0)
+        {
+            horizontal = Input.GetAxisRaw("Horizontal");
+            vertical = Input.GetButtonDown("Vertical");
+            VerticalMovement(vertical);
+            HorizontalMovement(horizontal);
+
+            if (transform.position.y < -10f)
+            {
+                DamagePlayer();
+                StartLevel();
+            }
+        }
+    }
+
+    private void StartLevel()
+    {
+        Vector2 StartLocation = LevelStart.transform.position;
+        transform.position = StartLocation;
+    }
+
+    private void VerticalMovement(bool vertical)
+    {
+        //Jump Animation and Movement
+
+        if (IsGrounded)
+        {
+            DoubleJump = true;
+        }
+        if (vertical)
+        {
+            if (IsGrounded)
+            {
+                animator.SetBool("JumpUp", true);
+                Body.AddForce(new Vector2(0, jump), ForceMode2D.Impulse);
+            }
+            else if (!IsGrounded && DoubleJump)
+            {
+                animator.SetBool("JumpUp", true);
+                Body.AddForce(new Vector2(0, jump), ForceMode2D.Impulse);
+                DoubleJump = false;
+            }
+        }
+        else if (!IsGrounded && !vertical)
+        {
+            animator.SetBool("JumpUp", false);
+            animator.SetBool("JumpDown", true);
+        }
+        else if (IsGrounded && !vertical)
+        {
+            animator.SetBool("JumpDown", false);
+        }
 
 
-        //if (Input.GetKey(KeyCode.LeftControl))
-        //{
-        //    Crouch(true);
-        //}
-        //else
-        //{
-        //    Crouch(false);
-        //}
 
+        //crouch Animation
+        if (Input.GetKeyDown("left ctrl"))
+        {
+            animator.SetBool("Crouch", true);
+        }
+        else if (Input.GetKeyUp("left ctrl"))
+        {
+            animator.SetBool("Crouch", false);
+        }
 
     }
 
-    private void PlayMovementAnimation(float horizontal , float vertical)
+    private void HorizontalMovement(float horizontal)
     {
+
+        //Horizontal Movement
+        Vector3 position = transform.position;
+        position.x += horizontal * speed * Time.deltaTime;
+        
+        transform.position = position;
+
+        //Run Animation and Flip
         animator.SetFloat("Speed", Mathf.Abs(horizontal));
+        
         Vector3 scale = transform.localScale;
-        if (horizontal < 0f)
+
+        if (horizontal < 0)
         {
             scale.x = -1f * Mathf.Abs(scale.x);
+
         }
-        else if (horizontal > 0f)
+        else if (horizontal > 0)
         {
-            scale.x = Mathf.Abs(scale.x);       // player run animation.
+            scale.x = Mathf.Abs(scale.x);
         }
         transform.localScale = scale;
 
-        
-        if (vertical > 0)
-        {
-            animator.SetBool("Jump", true);
-        }
-        else                                  // player jump animation.
-        {
-            animator.SetBool("Jump",false);
-        }
-
     }
 
-
-    private void MoveCharacter(float horizontal, float vertical)
+    //GroundCheck
+    void OnTriggerEnter2D(Collider2D collision)
     {
-        Vector3 Position = transform.position;
-        Position.x += horizontal * speed * Time.deltaTime;
-        transform.position = Position;                       // moving player horizontally.
-        if (vertical > 0 && isGrounded)
+        if (collision.gameObject.tag == ("Ground") ||  collision.gameObject.tag == ("platform") || collision.gameObject.tag == ("MovingPlatform" ))
         {
-            playerAnimator.SetTrigger("Jump");
-            rd2d.AddForce(new Vector2(0f,Jump),ForceMode2D.Force);
-            Debug.Log("Jumping");
+            IsGrounded = true;
+            animator.SetBool("JumpUp", false);
+            animator.SetBool("JumpDown", false);
         }
-        Debug.Log("isGrounded: " + isGrounded);
+
+        if (collision.gameObject.tag == "Portal")
+        {
+            if (ScoreDisplay.ScoreValue >= LevelWinController.WinPoints)
+            {
+                LevelWinController.PlayerWin();
+                enabled = false;
+            }
+        }
     }
-    private void OnCollisionStay2D(Collision2D other)
+
+    void OnTriggerExit2D(Collider2D collision)
     {
-        if (other.transform.tag == "platform")
+        if (collision.gameObject.tag == ("Ground") || collision.gameObject.tag == ("platform") || collision.gameObject.tag == ("MovingPlatform"))
         {
-            isGrounded = true;
+            IsGrounded = false;
         }
     }
-   private void OnCollisionExit2D(Collision2D other)
+
+    private void OnCollisionExit2D(Collision2D collision)
     {
-        if (other.transform.tag == "platform")
+        if (collision.gameObject.GetComponent<EnemyController>() != null)
         {
-            isGrounded = false;
+            animator.SetBool("Hurt", false);
+        }
+
+        if (collision.gameObject.tag == ("MovingPlatform"))
+        {
+            transform.parent = null;
         }
     }
-   
 
 
+    //Key Collection
+    public void Pickup_Key()
+    {
+        ScoreDisplay.ScoreValue += 10;
+        Debug.Log("Picked up a Key! Current Score: " + ScoreDisplay.ScoreValue);
+    }
 
-        //public void Crouch(bool crouch)
-        //{
-        //    animator.SetBool("IsCrouch", crouch);
-        //}
+
+    public void DamagePlayer()
+    {
+        Lives--;
+        if (Lives <= 0)
+        {
+            animator.SetTrigger("Dead");
+            
+            gameOverController.PlayerDied();
+            enabled = false;
+        }
+        else
+        {
+            animator.SetTrigger("Hurt");
+            Heart[Lives].SetActive(false);
+        }
+    }
+
+    public void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == ("MovingPlatform"))
+        { 
+            transform.parent = collision.transform;
+        }
+    }
+    
+
 
 
 }
+
