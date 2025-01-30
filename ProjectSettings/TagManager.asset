@@ -4,15 +4,18 @@
 TagManager:
   serializedVersion: 2
   tags:
+  - Portal
+  - Ground
   - platform
+  - MovingPlatform
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Platform
+  - Enemy
   - Water
   - UI
-  - Player
+  - 
   - 
   - 
   - 
@@ -39,6 +42,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 4025148079
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
