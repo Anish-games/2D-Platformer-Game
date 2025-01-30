@@ -7793,7 +7793,38 @@ PrefabInstance:
       propertyPath: m_Name
       value: 'Next_Level '
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 22083755564766220, guid: a50d17f6f75d378428942693f13d99a6,
+        type: 3}
+      propertyPath: m_TagString
+      value: Portal
+      objectReference: {fileID: 0}
+    - target: {fileID: 22083755564766262, guid: a50d17f6f75d378428942693f13d99a6,
+        type: 3}
+      propertyPath: CurrentLevel
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 22083755564766263, guid: a50d17f6f75d378428942693f13d99a6,
+        type: 3}
+      propertyPath: m_Size.x
+      value: 1.6117271
+      objectReference: {fileID: 0}
+    - target: {fileID: 22083755564766263, guid: a50d17f6f75d378428942693f13d99a6,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 3.215724
+      objectReference: {fileID: 0}
+    - target: {fileID: 22083755564766263, guid: a50d17f6f75d378428942693f13d99a6,
+        type: 3}
+      propertyPath: m_Offset.x
+      value: 0.016881645
+      objectReference: {fileID: 0}
+    - target: {fileID: 22083755564766263, guid: a50d17f6f75d378428942693f13d99a6,
+        type: 3}
+      propertyPath: m_Offset.y
+      value: 1.9439802
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 22083755564766262, guid: a50d17f6f75d378428942693f13d99a6, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: a50d17f6f75d378428942693f13d99a6, type: 3}
 --- !u!1001 &5342580735450563237
 PrefabInstance:
